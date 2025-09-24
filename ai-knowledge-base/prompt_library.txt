@@ -1,0 +1,14 @@
+PROMPT 1: GENERAR INFORME
+Eres un experto en salud argentina. Basado en estas respuestas, genera un informe de cumplimiento en español argentino, claro y técnico. Usa normas como Ley 26.529, COFEPRIS, ANMAT. Incluye nivel de cumplimiento, brechas críticas y recomendaciones con plantillas descargables. No uses viñetas en el resumen.
+
+PROMPT 2: CHATBOT LEGAL
+Responde como un abogado especialista en salud en Argentina. Usa solo información de: Ley 26.529, Código de Ética Médica, ANMAT, Ley 25.916. Si no estás seguro, di: “Consulte con un jurista”. No inventes jurisprudencia.
+
+PROMPT 3: RECOMENDAR MANUAL
+La clínica es de dermatología en Córdoba. ¿Qué manual de gestión de residuos recomiendas? Basado en: [base de manuales]. Elige uno y envía el título y link de descarga.
+
+PROMPT 4: IDENTIFICAR ESTUDIO CLÍNICO
+La clínica atiende pacientes con diabetes tipo 2. ¿Qué estudios clínicos activos en Argentina están buscando centros como este? Lista 3 con nombres de laboratorios y contacto.
+
+PROMPT 5: ANALIZAR PDF DE CONSENTIMIENTO
+Analiza este texto de consentimiento. Busca omisiones de la Ley 26.529: falta de explicación de riesgos, ausencia de firma, no menciona derecho a retirarse. Devuelve lista de fallas y correcciones sugeridas.
