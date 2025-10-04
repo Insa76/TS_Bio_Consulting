@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+# app/routers/ai.py
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Dict
 from app.database.database import get_db
@@ -7,9 +8,8 @@ from app.ai.generate_report import generate_audit_report
 from app.ai.legal_chatbot import ask_legal_question
 from app.models.user import User
 from app.auth import get_current_user
-from app.ai import kb  # Importa la base de conocimiento
+from app.ai import kb
 from pydantic import BaseModel
-
 import requests
 from app.models.audit import Audit
 
@@ -31,50 +31,57 @@ async def chat(
     answer = ask_legal_question(q)
     return {"answer": answer}
 
-
-
 @router.get("/report/{audit_id}")
-def generate_ai_report(audit_id: int, db: Session = Depends(get_db)):
-    audit = db.query(Audit).filter(Audit.id == audit_id).first()
+def generate_ai_report(
+    audit_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 1. Buscar la auditoría
+    audit = db.query(Audit).filter(Audit.id == audit_id, Audit.user_id == current_user.id).first()
     if not audit:
-        raise HTTPException(status_code=404, detail="Auditoría no encontrada")
+        raise HTTPException(status_code=404, detail="Auditoría no encontrada o no autorizada")
 
-    # 🔍 1. Búsqueda semántica: encuentra normativas relevantes
-    user_answers = " ".join(audit.answers.values())
-    relevant_docs = kb.search(user_answers, k=3)  # Obtiene los 3 fragmentos más cercanos
-    context = "\n\n".join(relevant_docs)
+    # 2. Preparar respuestas
+    answers = "\n".join([f"{q}: {a}" for q, a in audit.answers.items()])
 
-    # 🧠 2. Prompt mejorado con contexto legal
+    # 3. Prompt claro y estructurado
     prompt = f"""
-    Eres un auditor médico experto en regulaciones sanitarias argentinas.
-    Usa estrictamente la siguiente información para fundamentar tu respuesta:
+Eres un consultor médico especializado en auditorías sanitarias argentinas.
+Basado en las siguientes respuestas de una autoevaluación, genera un informe profesional en HTML (sin <html> ni <body>).
 
-    {context}
+INFORME:
+Incluye:
+- Un título claro
+- Hallazgos principales (positivos y críticos)
+- Nivel general de cumplimiento: X%
+- Brechas críticas (máximo 5): con nombre de norma y riesgo (Alta/Media/Baja)
+- Recomendaciones: Acciones específicas con plantillas descargables
+- Nota final: “Este informe fue generado por TS Bio Consulting AI. No sustituye asesoría legal.”
 
-    Genera un informe ejecutivo claro, profesional y técnico basado en esta evaluación:
+Preguntas y respuestas:
+{answers}
 
-    Puntaje: {audit.score}/100
-    Respuestas del cliente: {audit.answers}
+Normativas clave:
+- Ley 26.529: Derechos del Paciente
+- Ley 25.916: Gestión de Residuos
+- ANMAT: Regulación de productos sanitarios
+- NOM-004: Higiene y seguridad
+- Ley 27.575: Telemedicina
 
-    ### Formato del informe (en HTML):
-    <h2>📋 Informe de Cumplimiento Sanitario</h2>
-    <p><strong>Fecha:</strong> {audit.fecha.strftime('%d/%m/%Y')}</p>
+Formato del informe:
+Título: Informe de Cumplimiento Sanitario – [Nombre de la Clínica]
+Resumen ejecutivo: 1 párrafo breve.
+Nivel general de cumplimiento: X%
+Brechas críticas (máximo 5): con nombre de norma y riesgo (Alta/Media/Baja)
+Recomendaciones: Acciones específicas con plantillas descargables
+Nota final: “Este informe fue generado por TS Bio Consulting AI. No sustituye asesoría legal.”
 
-    <h3>✅ Resumen Ejecutivo</h3>
-    <p>[Diagnóstico claro del nivel de cumplimiento]</p>
-
-    <h3>⚠️ Áreas de Mejora</h3>
-    <ul>
-      <li>[Problema identificado] - [Fundamento legal]</li>
-    </ul>
-
-    <h3>💡 Recomendaciones</h3>
-    <p>Incluye acciones específicas, responsables y plazos.</p>
-
-    Usa un tono formal, pero comprensible. No inventes normativas.
-    """
+No uses viñetas en el resumen. Usa párrafos completos.
+"""
 
     try:
+        # 4. Llamar a Ollama (IA local)
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
@@ -84,23 +91,27 @@ def generate_ai_report(audit_id: int, db: Session = Depends(get_db)):
             },
             timeout=60
         )
-        response.raise_for_status()
-        data = response.json()
 
-        return {
-            "report": data["response"],
-            "sources": relevant_docs[:2]  # Opcional: devolver las fuentes usadas
-        }
+        if not response.ok: raise HTTPException(status_code=500, detail="Error al comunicarse con Ollama")
+
+        data = response.json()
+        report_text = data["response"]
+
+        # 5. Guardar el informe en la auditoría
+        audit.report = report_text
+        db.commit()
+
+        return {"report": report_text}
 
     except requests.exceptions.ConnectionError:
-        raise HTTPException(status_code=500, detail="No se pudo conectar con Ollama. ¿Está corriendo?")
+        raise HTTPException(status_code=500, detail="No se pudo conectar con Ollama. Asegúrate de que esté corriendo.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al generar el informe: {str(e)}")
-    
+
 @router.post("/search")
 def semantic_search(query_data: SearchQuery):
     try:
         results = kb.search(query_data.query, k=2)
         return {"results": results}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en búsqueda: {str(e)}")    
+        raise HTTPException(status_code=500, detail=f"Error en búsqueda: {str(e)}")

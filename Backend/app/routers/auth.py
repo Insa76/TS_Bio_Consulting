@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from app.database.database import get_db
 from app.models.user import User
-from app.core.security import verify_password, create_access_token, decode_access_token, create_reset_token, verify_reset_token
+from app.core.security import verify_password, create_access_token, decode_access_token, create_reset_token, verify_reset_token, get_password_hash
 from app.auth import oauth2_scheme
 from fastapi import Form, BackgroundTasks
 
@@ -18,16 +18,23 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 @router.post("/login")
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(get_current_user),
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
+    # ← No uses get_current_user aquí
     user = db.query(User).filter(User.email == form_data.username).first()
+    
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email o contraseña incorrectos",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=401,
+            detail="Email o contraseña incorrectos"
         )
+    
+    access_token = create_access_token(data={
+        "sub": user.email,
+        "user_id": user.id,
+        "role": user.role
+    })
     
     access_token = create_access_token(data={"sub": user.email, "user_id": user.id, "role": user.role})
     return {
@@ -40,6 +47,58 @@ def login(
             "role": user.role
         }
     }
+
+@router.post("/register")
+def register(
+    name: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    organization: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email ya registrado")
+
+    role = "admin" if "admin" in email.lower() else "client"
+
+    from app.core.security import get_password_hash
+    hashed_password = get_password_hash(password)
+
+    new_user = User(
+        name=name,
+        email=email,
+        hashed_password=hashed_password,
+        organization=organization,
+        role=role
+    )
+
+    try:
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        access_token = create_access_token(data={
+            "sub": new_user.email,
+            "user_id": new_user.id,
+            "role": new_user.role
+        })
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": new_user.id,
+                "name": new_user.name,
+                "email": new_user.email,
+                "role": new_user.role,
+                "organization": new_user.organization
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+    
 
 @router.post("/forgot-password")
 def forgot_password(

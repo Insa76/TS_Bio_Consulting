@@ -8,6 +8,9 @@ from app.models.chat_message import Base as ChatBase
 
 # Routers
 from app.routers import auth, audits, ai, contact, chat
+from app.routers.tasks import router as tasks_router
+from app.routers.dashboard import router as dashboard_router
+from app.routers.teams import router as teams_router
 
 
 # Database
@@ -36,6 +39,9 @@ app.include_router(audits.router, prefix="/audits", tags=["audits"])
 app.include_router(ai.router, prefix="/ai", tags=["ai"])
 app.include_router(contact.router, prefix="/contact", tags=["contact"])
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
+app.include_router(tasks_router, prefix="/tasks", tags=["Tareas"])
+app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
+app.include_router(teams_router, prefix="/teams", tags=["Equipos"])
 
 @app.get("/")
 def read_root():

@@ -103,18 +103,21 @@ const Contacto = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F5E9DC',
-      fontFamily: 'Inter, sans-serif'
+      backgroundColor: '#B8A89D',
+      fontFamily: 'Inter, sans-serif',
+      borderRadius: '6px'
     }}>
       <Header />
 
       <section style={{
         padding: '4rem 1.5rem',
-        backgroundColor: 'white'
+        backgroundColor: '#F5E9DC',
+        borderRadius: '6px'
       }}>
         <div style={{
           maxWidth: '800px',
-          margin: '0 auto'
+          margin: '0 auto',
+          
         }}>
           <h1 style={{
             fontSize: '2.5rem',

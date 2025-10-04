@@ -19,6 +19,13 @@ const Register = () => {
     setError('');
     setLoading(true);
 
+    // Validación mínima de contraseña
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      setLoading(false);
+      return;
+    }
+
     try {
       await register(name, email, password, organization);
       navigate('/dashboard');
@@ -32,7 +39,8 @@ const Register = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      //backgroundColor: '#7d6a5ea2', // Fondo beige claro
+      backgroundColor: '#F5E9DC', // ✅ Fondo beige claro activado
+      borderRadius: '6px',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -77,7 +85,7 @@ const Register = () => {
         }}>
           {error && (
             <div style={{
-              backgroundColor: '#d9a49a',
+              backgroundColor: '#D9A39A',
               color: 'white',
               padding: '0.75rem',
               borderRadius: '8px',
@@ -102,9 +110,11 @@ const Register = () => {
             </label>
             <input
               type="text"
+              name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              autoComplete="name"
               style={{
                 width: '100%',
                 padding: '10px',
@@ -112,10 +122,16 @@ const Register = () => {
                 borderRadius: '8px',
                 fontSize: '1rem',
                 outline: 'none',
-                transition: 'border-color 0.3s ease'
+                transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#D4B9A5'}
-              onBlur={(e) => e.target.style.borderColor = '#E8D6C6'}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#D4B9A5';
+                e.target.style.boxShadow = '0 0 0 3px rgba(212, 185, 165, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#E8D6C6';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
@@ -132,9 +148,11 @@ const Register = () => {
             </label>
             <input
               type="email"
+              name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
               style={{
                 width: '100%',
                 padding: '10px',
@@ -142,10 +160,16 @@ const Register = () => {
                 borderRadius: '8px',
                 fontSize: '1rem',
                 outline: 'none',
-                transition: 'border-color 0.3s ease'
+                transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#D4B9A5'}
-              onBlur={(e) => e.target.style.borderColor = '#E8D6C6'}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#D4B9A5';
+                e.target.style.boxShadow = '0 0 0 3px rgba(212, 185, 165, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#E8D6C6';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
@@ -162,9 +186,11 @@ const Register = () => {
             </label>
             <input
               type="password"
+              name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="new-password"
               style={{
                 width: '100%',
                 padding: '10px',
@@ -172,10 +198,16 @@ const Register = () => {
                 borderRadius: '8px',
                 fontSize: '1rem',
                 outline: 'none',
-                transition: 'border-color 0.3s ease'
+                transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#D4B9A5'}
-              onBlur={(e) => e.target.style.borderColor = '#E8D6C6'}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#D4B9A5';
+                e.target.style.boxShadow = '0 0 0 3px rgba(212, 185, 165, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#E8D6C6';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 
@@ -192,6 +224,7 @@ const Register = () => {
             </label>
             <input
               type="text"
+              name="organization"
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
               required
@@ -202,10 +235,16 @@ const Register = () => {
                 borderRadius: '8px',
                 fontSize: '1rem',
                 outline: 'none',
-                transition: 'border-color 0.3s ease'
+                transition: 'border-color 0.3s ease, box-shadow 0.3s ease'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#D4B9A5'}
-              onBlur={(e) => e.target.style.borderColor = '#E8D6C6'}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#D4B9A5';
+                e.target.style.boxShadow = '0 0 0 3px rgba(212, 185, 165, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#E8D6C6';
+                e.target.style.boxShadow = 'none';
+              }}
             />
           </div>
 

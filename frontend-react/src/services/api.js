@@ -1,10 +1,15 @@
+// src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api'; // Tu backend FastAPI
+// ✅ Usa la URL base correcta (sin /api si no lo usas)
+const API_BASE_URL = 'http://localhost:8000'; // ← Sin /api al final
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 // Interceptor para agregar token
@@ -21,9 +26,24 @@ api.interceptors.request.use(
   }
 );
 
+// Manejo de respuestas
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token inválido o expirado → logout
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Servicios
 export const authService = {
-  login: (data) => api.post('/auth/login', data),
-  register: (data) => api.post('/auth/register', data),
+  login: (credentials) => api.post('/auth/login', credentials),
+  register: (userData) => api.post('/auth/register', userData),
 };
 
 export const auditService = {
@@ -33,6 +53,9 @@ export const auditService = {
 };
 
 export const aiService = {
-  chat: (question) => api.post('/ai/chat', { question }),
+  // ✅ Este endpoint debe estar definido en FastAPI
+  chat: (question) => api.post('/ai/search', { query: question }), // Usa búsqueda semántica
   generateReport: (auditId) => api.get(`/ai/report/${auditId}`),
 };
+
+export default api;

@@ -1,17 +1,19 @@
 // src/pages/AuditPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const AuditPage = () => {
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [auditId, setAuditId] = useState(null);
   const [report, setReport] = useState('');
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Preguntas del cuestionario
   const questions = [
     {
       id: 'q1',
@@ -40,52 +42,168 @@ const AuditPage = () => {
     },
   ];
 
-  const handleChange = (id, value) => {
-    setAnswers({ ...answers, [id]: value });
+  // Cargar respuestas desde localStorage al iniciar
+  useEffect(() => {
+    const saved = localStorage.getItem('auditAnswers');
+    if (saved) {
+      try {
+        setAnswers(JSON.parse(saved));
+      } catch (e) {
+        console.warn("No se pudo cargar respuestas guardadas");
+      }
+    }
+  }, []);
+
+  // Función para extraer el plan de acción del texto del informe
+  const extractActionPlan = (report) => {
+    if (!report) return [];
+
+    const lines = report.split('\n');
+    const actionPlan = [];
+    let capturing = false;
+
+    for (let line of lines) {
+      if (line.includes('PLAN DE ACCIÓN AUTOMÁTICO')) {
+        capturing = true;
+        continue;
+      }
+
+      if (capturing && line.trim().startsWith('-')) {
+        // Extraer acción, responsable, plazo, indicador
+        const match = line.match(/- Acción: (.+?)\s*Responsable: (.+?)\s*Plazo: (.+?)\s*Indicador: (.+)/);
+        if (match) {
+          actionPlan.push({
+            action: match[1].trim(),
+            responsible: match[2].trim(),
+            deadline: match[3].trim(),
+            successIndicator: match[4].trim()
+          });
+        }
+      }
+
+      if (capturing && line.trim().length === 0) {
+        break; // Fin del plan de acción
+      }
+    }
+
+    return actionPlan;
   };
 
+  // Guardar respuesta y en localStorage
+  const handleChange = (id, value) => {
+    const newAnswers = { ...answers, [id]: value };
+    setAnswers(newAnswers);
+    localStorage.setItem('auditAnswers', JSON.stringify(newAnswers));
+  };
+
+  // Enviar auditoría y generar informe
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
-  setReport('');
+    e.preventDefault();
+    setError('');
 
-  try {
-    // Paso 1: Guardar auditoría
-    const response = await fetch('http://localhost:8000/audits', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify({
-        score: Object.keys(answers).length * 20,
-        answers: answers
-      })
+    if (Object.keys(answers).length < questions.length) {
+      setError('Por favor, responda todas las preguntas.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Paso 1: Guardar auditoría
+      const response = await fetch('http://localhost:8000/audits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          score: Object.keys(answers).length * 20,
+          answers: answers
+        })
+      });
+
+      if (!response.ok) throw new Error('Error al enviar la auditoría');
+
+      const auditData = await response.json();
+
+      // Paso 2: Obtener informe de IA
+      const aiResponse = await fetch(`http://localhost:8000/ai/report/${auditData.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        }
+      });
+
+      if (!aiResponse.ok) throw new Error('Error al generar el informe');
+
+      const reportData = await aiResponse.json();
+      setReport(reportData.report);
+
+      // Limpiar respuestas después de éxito
+      localStorage.removeItem('auditAnswers');
+
+    } catch (err) {
+      setError(err.message || 'Ocurrió un error inesperado');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generar PDF del informe
+  const generatePDF = () => {
+    const input = document.getElementById('report-content');
+    const button = document.activeElement;
+
+    button.disabled = true;
+    button.innerText = 'Generando PDF...';
+
+    html2canvas(input, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#fff'
+    }).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const width = pdf.internal.pageSize.getWidth();
+      const height = (canvas.height * width) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+      const fileName = `informe-auditoria-${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+
+      button.disabled = false;
+      button.innerText = '📄 Descargar Informe en PDF';
     });
+  };
 
-    if (!response.ok) throw new Error('Error al enviar la auditoría');
-    
-    const auditData = await response.json();
+  // Asignar tarea
+  const assignTask = async (action, responsible, deadline) => {
+    try {
+      const response = await fetch('http://localhost:8000/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          audit_id: reportId,
+          action,
+          responsible,
+          deadline: new Date(deadline).toISOString()
+        })
+      });
 
-    // Paso 2: Obtener informe de IA
-    const aiResponse = await fetch(`http://localhost:8000/ai/report/${auditData.id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      }
-    });
+      if (!response.ok) throw new Error('Error al asignar la tarea');
 
-    if (!aiResponse.ok) throw new Error('Error al generar el informe');
+      alert(`Tarea asignada a ${responsible} con vencimiento el ${deadline}`);
+    } catch (error) {
+      console.error("Error al asignar tarea:", error);
+      alert("No se pudo asignar la tarea. Revisa los datos.");
+    }
+  };
 
-    const reportData = await aiResponse.json();
-    setReport(reportData.report);
-
-  } catch (err) {
-    setError(err.message || 'Ocurrió un error inesperado');
-  } finally {
-    setLoading(false);
-  }
-};
+  // Estado para guardar el ID del informe
+  const [reportId, setReportId] = useState(null);
 
   return (
     <div style={{
@@ -116,18 +234,107 @@ const AuditPage = () => {
         Complete este cuestionario para obtener un diagnóstico automático.
       </p>
 
+      {/* Mostrar informe si ya se generó */}
       {report ? (
-        <div style={{
-          padding: '24px',
-          backgroundColor: '#F0F7FF',
-          borderLeft: '4px solid #1A3A7D',
-          borderRadius: '8px',
-          marginTop: '20px'
-        }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#1A3A7D' }}>📋 Informe Generado</h2>
-          <div dangerouslySetInnerHTML={{ __html: report }} />
-        </div>
+        <>
+          <div id="report-content" style={{
+            padding: '24px',
+            backgroundColor: '#F0F7FF',
+            borderLeft: '4px solid #1A3A7D',
+            borderRadius: '8px',
+            marginTop: '20px',
+            minHeight: '297mm' // A4 height
+          }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#1A3A7D' }}>
+              📋 Informe de Auditoría Sanitaria
+            </h2>
+            <p><strong>Cliente:</strong> {user?.organization || 'Sin organización'}</p>
+            <p><strong>Fecha:</strong> {new Date().toLocaleDateString('es-AR')}</p>
+            <hr style={{ margin: '16px 0', borderColor: '#B8A89D' }} />
+            <div dangerouslySetInnerHTML={{ __html: report }} />
+          </div>
+
+          {/* Plan de Acción */}
+          <div style={{
+            marginTop: '30px',
+            padding: '24px',
+            backgroundColor: '#FFF',
+            borderRadius: '8px',
+            border: '1px solid #E8D6C6'
+          }}>
+            <h3 style={{ color: '#7D6A5E', marginBottom: '16px' }}>🚀 Plan de Acción Automático</h3>
+            {extractActionPlan(report).map((action, index) => (
+              <div key={index} style={{
+                marginBottom: '16px',
+                padding: '12px',
+                backgroundColor: '#F5E9DC',
+                borderRadius: '6px',
+                borderLeft: '4px solid #D4B9A5'
+              }}>
+                <strong>{index + 1}. {action.action}</strong>
+                <p style={{ margin: '8px 0', color: '#666' }}>
+                  <span style={{ fontWeight: 'bold' }}>Responsable:</span> {action.responsible} | 
+                  <span style={{ fontWeight: 'bold' }}>Plazo:</span> {action.deadline}
+                </p>
+                <p style={{ margin: '8px 0', color: '#666' }}>
+                  <span style={{ fontWeight: 'bold' }}>Indicador de éxito:</span> {action.successIndicator}
+                </p>
+
+                {/* Botón para asignar tarea */}
+                <button
+                  onClick={() => assignTask(action.action, action.responsible, action.deadline)}
+                  style={{
+                    marginTop: '8px',
+                    padding: '6px 12px',
+                    backgroundColor: '#7D6A5E',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.3s ease'
+                  }}
+                >
+                  📌 Asignar tarea
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={generatePDF}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              backgroundColor: '#7D6A5E',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
+            📄 Descargar Informe en PDF
+          </button>
+
+          <button
+            onClick={() => navigate('/dashboard')}
+            style={{
+              marginTop: '10px',
+              padding: '10px 20px',
+              backgroundColor: '#B8A89D',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: '500',
+              cursor: 'pointer'
+            }}
+          >
+            ← Volver al Panel
+          </button>
+        </>
       ) : (
+        /* Formulario de auditoría */
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {questions.map((q) => (
             <div key={q.id} style={{
@@ -157,6 +364,7 @@ const AuditPage = () => {
                       name={q.id}
                       value={option}
                       onChange={(e) => handleChange(q.id, e.target.value)}
+                      checked={answers[q.id] === option}
                       style={{ marginRight: '12px', accentColor: '#D4B9A5' }}
                       required
                     />
@@ -181,20 +389,16 @@ const AuditPage = () => {
 
           <button
             type="submit"
-            disabled={loading || Object.keys(answers).length < questions.length}
+            disabled={loading}
             style={{
               padding: '12px 24px',
-              backgroundColor: loading || Object.keys(answers).length < questions.length 
-                ? '#B8A89D' 
-                : '#D4B9A5',
+              backgroundColor: loading ? '#B8A89D' : '#D4B9A5',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
               fontSize: '1rem',
               fontWeight: '500',
-              cursor: loading || Object.keys(answers).length < questions.length 
-                ? 'not-allowed' 
-                : 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'background-color 0.3s ease'
             }}
           >
@@ -202,47 +406,8 @@ const AuditPage = () => {
           </button>
         </form>
       )}
-
-      {auditId && !report && (
-        <div style={{
-          textAlign: 'center',
-          padding: '20px',
-          marginTop: '20px'
-        }}>
-          <div style={{
-            display: 'inline-block',
-            width: '32px',
-            height: '32px',
-            border: '4px solid #D4B9A5',
-            borderTop: '4px solid transparent',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <p style={{ color: '#7D6A5E', marginTop: '12px' }}>Generando su informe personalizado...</p>
-        </div>
-      )}
     </div>
   );
 };
-
-// Añadimos el estilo animado directamente en el head (opcional)
-if (document.styleSheets.length === 0) {
-  const style = document.createElement('style');
-  document.head.appendChild(style);
-}
-
-const styleSheet = document.styleSheets[0];
-const rule = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-
-try {
-  styleSheet.insertRule(rule, styleSheet.cssRules.length);
-} catch (e) {
-  console.warn('No se pudo insertar la regla CSS:', e);
-}
 
 export default AuditPage;
