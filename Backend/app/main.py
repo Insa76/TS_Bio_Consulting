@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.models.chat_message import Base as ChatBase
 
 # Routers
-from app.routers import auth, audits, ai, contact, chat
+from app.routers import auth, audits, ai, contact, chat, export
 from app.routers.tasks import router as tasks_router
 from app.routers.dashboard import router as dashboard_router
 from app.routers.teams import router as teams_router
@@ -23,7 +23,7 @@ app = FastAPI(title="TS Bio Consulting API", version="1.0.0")
 # CORS - Cambia ["*"] por dominios específicos en producción
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Solo frontend permitido
+    allow_origins=["http://localhost:5173", "http://192.168.1.12:5173"],  # Solo frontend permitido
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,6 +42,7 @@ app.include_router(chat.router, prefix="/chat", tags=["chat"])
 app.include_router(tasks_router, prefix="/tasks", tags=["Tareas"])
 app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(teams_router, prefix="/teams", tags=["Equipos"])
+app.include_router(export.router, prefix="/export", tags=["export"])
 
 @app.get("/")
 def read_root():

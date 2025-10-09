@@ -64,7 +64,7 @@ const AssignMembers = () => {
         color: '#7D6A5E',
         marginBottom: '16px'
       }}>
-        👥 Asignar Miembro a Equipo
+        <img src="/images/team2.png" width="50px" height="50px" /> Asignar Miembro a Equipo
       </h1>
 
       <p style={{

@@ -1,71 +1,142 @@
+// src/components/AI/ChatBot.jsx
 import React, { useState } from 'react';
-import axios from '../../services/api';
 
-const Chatbot = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { sender: 'bot', text: '¿Tienes dudas sobre cumplimiento sanitario? Pregúntame.' }
-  ]);
-  const [input, setInput] = useState('');
+const ChatBot = () => {
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!input.trim()) return;
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  setAnswer('');
 
-    setMessages([...messages, { sender: 'user', text: input }]);
-    setInput('');
+  try {
+    const token = localStorage.getItem('token'); // ✅ Obtiene el token
 
-    try {
-      const res = await axios.post('/ai/chat', { question: input });
-      setMessages(prev => [...prev, { sender: 'bot', text: res.data.answer }]);
-    } catch (err) {
-      setMessages(prev => [...prev, { sender: 'bot', text: 'Lo siento, hubo un error. Intenta más tarde.' }]);
+    const response = await fetch('http://localhost:8000/ai/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // ✅ Envía el token
+      },
+      body: JSON.stringify({ question }) // ✅ Envía la pregunta
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Error al generar respuesta');
     }
-  };
+
+    const data = await response.json();
+    setAnswer(data.answer);
+
+  } catch (err) {
+    setError(err.message || 'No se pudo generar la respuesta');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {!isOpen ? (
+    <div style={{
+      maxWidth: '800px',
+      margin: '40px auto',
+      padding: '32px',
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      boxShadow: '0 4px 20px rgba(125, 106, 94, 0.1)',
+      fontFamily: 'Inter, sans-serif'
+    }}>
+      <h2 style={{
+        fontSize: '2rem',
+        fontWeight: 'bold',
+        color: '#7D6A5E',
+        marginBottom: '16px'
+      }}>
+        🤖 Asistente IA Legal
+      </h2>
+
+      <p style={{
+        color: '#B8A89D',
+        marginBottom: '32px'
+      }}>
+        Pregunta cualquier duda legal sobre normativas sanitarias argentinas.
+      </p>
+
+      <form onSubmit={handleSubmit} style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      }}>
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '0.95rem',
+            color: '#7D6A5E',
+            fontWeight: '500',
+            marginBottom: '4px'
+          }}>
+            Tu pregunta
+          </label>
+          <input
+            type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '12px',
+              border: '1px solid #E8D6C6',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              outline: 'none'
+            }}
+            onFocus={(e) => e.target.style.borderColor = '#D4B9A5'}
+            onBlur={(e) => e.target.style.borderColor = '#E8D6C6'}
+          />
+        </div>
+
         <button
-          onClick={() => setIsOpen(true)}
-          className="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition"
+          type="submit"
+          disabled={loading}
+          style={{
+            padding: '12px 24px',
+            backgroundColor: loading ? '#B8A89D' : '#D4B9A5',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            fontWeight: '500',
+            cursor: loading ? 'not-allowed' : 'pointer'
+          }}
         >
-          ❓
+          {loading ? 'Generando respuesta...' : 'Enviar pregunta'}
         </button>
-      ) : (
-        <div className="bg-white rounded-xl shadow-xl w-80 h-96 flex flex-col">
-          <div className="p-4 border-b font-semibold">🤖 Chat Legal</div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`max-w-xs p-2 rounded-lg ${
-                  msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-100'
-                }`}
-              >
-                {msg.text}
-              </div>
-            ))}
-          </div>
-          <div className="p-4 border-t flex">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="Pregunta algo..."
-              className="flex-1 p-2 border rounded-l focus:outline-none"
-            />
-            <button
-              onClick={handleSubmit}
-              className="bg-blue-600 text-white px-4 rounded-r"
-            >
-              Enviar
-            </button>
-          </div>
+      </form>
+
+      {answer && (
+        <div style={{
+          marginTop: '32px',
+          padding: '24px',
+          backgroundColor: '#F0F7FF',
+          borderLeft: '4px solid #1A3A7D',
+          borderRadius: '8px'
+        }}>
+          <h3 style={{
+            fontSize: '1.5rem',
+            fontWeight: '600',
+            color: '#1A3A7D',
+            marginBottom: '16px'
+          }}>
+            📋 Respuesta Legal
+          </h3>
+          <div dangerouslySetInnerHTML={{ __html: answer.replace(/\n/g, '<br>') }} />
         </div>
       )}
     </div>
   );
 };
 
-export default Chatbot;
+export default ChatBot;

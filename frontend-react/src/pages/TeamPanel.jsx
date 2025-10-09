@@ -283,7 +283,7 @@ const TeamPanel = () => {
         color: '#7D6A5E',
         marginBottom: '16px'
       }}>
-        👥 Panel de Equipo
+      <img src="/images/team2.png" width="50px" height="50px" /> Panel de Equipo
       </h1>
 
       <p style={{

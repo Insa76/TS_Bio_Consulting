@@ -195,7 +195,7 @@ const Reports = () => {
         color: '#7D6A5E',
         marginBottom: '16px'
       }}>
-        Historial de Auditorías
+        <img src="/images/doc2.png" width="100px" height="100px" />Historial de Auditorías
       </h1>
 
       <p style={{

@@ -111,7 +111,7 @@ const Contacto = () => {
 
       <section style={{
         padding: '4rem 1.5rem',
-        backgroundColor: '#F5E9DC',
+        backgroundColor: '#f5e9dc',
         borderRadius: '6px'
       }}>
         <div style={{

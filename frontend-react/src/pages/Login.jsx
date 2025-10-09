@@ -27,6 +27,7 @@ const Login = () => {
     try {
       await login(email, password);
       // El AuthContext ya maneja la redirección según rol
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión. Revisa tus credenciales.');
     } finally {
@@ -37,11 +38,11 @@ const Login = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F5E9DC', // Fondo beige claro
+      backgroundColor: '#f5e9dc65', // Fondo beige claro
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: '2rem',
+      padding: '0rem',
       borderRadius: '6px',
       fontFamily: 'Inter, sans-serif'
     }}>
@@ -51,7 +52,7 @@ const Login = () => {
         maxWidth: '500px',
         backgroundColor: 'white',
         borderRadius: '16px',
-        boxShadow: '0 8px 30px rgba(125, 106, 94, 0.15)',
+        boxShadow: '0 8px 30px rgba(61, 56, 52, 1)',
         overflow: 'hidden'
       }}>
         {/* Encabezado */}

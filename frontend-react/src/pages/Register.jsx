@@ -39,12 +39,12 @@ const Register = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F5E9DC', // ✅ Fondo beige claro activado
+      backgroundColor: '#f5e9dc65', // ✅ Fondo beige claro activado
       borderRadius: '6px',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: '2rem',
+      padding: '0rem',
       fontFamily: 'Inter, sans-serif'
     }}>
       {/* Contenedor del formulario */}

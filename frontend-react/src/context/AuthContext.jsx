@@ -24,69 +24,68 @@ export const AuthProvider = ({ children }) => {
 
   // Iniciar sesión
   const login = async (email, password) => {
-  try {
-    const response = await fetch('http://localhost:8000/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        username: email,
-        password: password
-      })
-    });
+    try {
+      const response = await fetch('http://localhost:8000/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          username: email,
+          password: password
+        })
+      });
 
-    // Si el fetch falló (red, 404, 500, etc.)
-    if (!response.ok) {
-      const errorText = await response.text(); // A veces no es JSON
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Credenciales incorrectas');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+
+      // ✅ No uses navigate aquí — déjalo para el componente Login.jsx
+
+    } catch (error) {
+      console.error("Error en login:", error);
+      throw error;
     }
-
-    const data = await response.json();
-
-    localStorage.setItem('token', data.access_token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    setUser(data.user);
-
-  } catch (error) {
-    console.error("Error en login:", error);
-    throw error; // Para que el frontend lo muestre
-  }
-};
+  };
 
   // Registro de usuario
   const register = async (name, email, password, organization) => {
-    const response = await fetch('http://localhost:8000/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        name,
-        email,
-        password,
-        organization
-      })
-    });
+    try {
+      const response = await fetch('http://localhost:8000/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          name: name,
+          email: email,
+          password: password,
+          organization: organization
+        })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || 'Error al registrar');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Error al registrar');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+
+      // ✅ No uses navigate aquí — déjalo para el componente Register.jsx
+
+    } catch (error) {
+      console.error("Error en registro:", error);
+      throw error;
     }
-
-    const data = await response.json();
-
-    const userData = {
-      id: data.user.id,
-      name: data.user.name,
-      email: data.user.email,
-      role: data.user.role,
-      organization: data.user.organization
-    };
-
-    localStorage.setItem('token', data.access_token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
   };
 
   // Cerrar sesión
@@ -94,6 +93,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
+    // ✅ No uses navigate aquí — déjalo para el componente que llama a logout()
   };
 
   const value = {
@@ -121,3 +121,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export { AuthContext };

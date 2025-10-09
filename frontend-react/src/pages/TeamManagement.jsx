@@ -181,7 +181,7 @@ const TeamManagement = () => {
         color: '#7D6A5E',
         marginBottom: '16px'
       }}>
-        👥 Gestión de Equipos
+        <img src="/images/team2.png" width="50px" height="50px" /> Gestión de Equipos
       </h1>
 
       <p style={{
