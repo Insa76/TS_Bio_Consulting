@@ -17,6 +17,6 @@ python-decouple==3.8
 firebase-admin==6.5.0
 sentence-transformers==3.0.1  # ✅ Versión moderna compatible con huggingface_hub>=0.20.0
 huggingface-hub==0.20.3       # ✅ Versión compatible
-torch==2.7.0
+torch==2.7.1
 torchvision==0.22.1
 torchaudio==2.7.1
