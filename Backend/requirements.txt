@@ -1,4 +1,4 @@
-# requirements.txt — Versiones compatibles y estables para Render
+# requirements.txt — Versiones compatibles con huggingface_hub moderno
 fastapi==0.115.0
 uvicorn==0.32.0
 python-dotenv==1.0.0
@@ -10,8 +10,13 @@ passlib[bcrypt]==1.7.4
 langchain==0.3.1
 langchain-community==0.3.1
 langchain-ollama==0.2.0
-faiss-cpu==1.12.0
+faiss-cpu==1.8.0
 pdfplumber==0.11.2
 python-multipart==0.0.9
 python-decouple==3.8
 firebase-admin==6.5.0
+sentence-transformers==3.0.1  # ✅ Versión moderna compatible con huggingface_hub>=0.20.0
+huggingface-hub==0.20.3       # ✅ Versión compatible
+torch==2.3.1
+torchvision==0.18.1
+torchaudio==2.3.1

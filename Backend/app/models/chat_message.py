@@ -2,6 +2,7 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+from app.database.base import Base
 
 Base = declarative_base()
 

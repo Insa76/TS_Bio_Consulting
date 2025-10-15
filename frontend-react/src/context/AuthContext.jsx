@@ -1,17 +1,21 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
+// ✅ Crear el contexto
 const AuthContext = createContext();
 
+// ✅ Exportar el proveedor
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Cargar usuario desde localStorage al iniciar
+  // Cargar usuario desde localStorage
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    
+
     if (token && userData) {
       try {
         setUser(JSON.parse(userData));
@@ -22,7 +26,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // Iniciar sesión
+  // ✅ Login
   const login = async (email, password) => {
     try {
       const response = await fetch('http://localhost:8000/auth/login', {
@@ -32,8 +36,8 @@ export const AuthProvider = ({ children }) => {
         },
         body: new URLSearchParams({
           username: email,
-          password: password
-        })
+          password: password,
+        }),
       });
 
       if (!response.ok) {
@@ -46,15 +50,19 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
 
-      // ✅ No uses navigate aquí — déjalo para el componente Login.jsx
-
+      // ✅ Redirigir según rol
+      if (data.user.role === 'admin') {
+        navigate('/dashboard');
+      } else {
+        navigate('/client');
+      }
     } catch (error) {
       console.error("Error en login:", error);
       throw error;
     }
   };
 
-  // Registro de usuario
+  // ✅ Registro
   const register = async (name, email, password, organization) => {
     try {
       const response = await fetch('http://localhost:8000/auth/register', {
@@ -66,8 +74,8 @@ export const AuthProvider = ({ children }) => {
           name: name,
           email: email,
           password: password,
-          organization: organization
-        })
+          organization: organization,
+        }),
       });
 
       if (!response.ok) {
@@ -79,21 +87,17 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
-
-      // ✅ No uses navigate aquí — déjalo para el componente Register.jsx
-
     } catch (error) {
       console.error("Error en registro:", error);
       throw error;
     }
   };
 
-  // Cerrar sesión
+  // ✅ Logout
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    // ✅ No uses navigate aquí — déjalo para el componente que llama a logout()
   };
 
   const value = {
@@ -113,7 +117,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook personalizado
+// ✅ Exportar el contexto para usarlo en otros archivos
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -121,5 +125,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-export { AuthContext };

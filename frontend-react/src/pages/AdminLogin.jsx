@@ -1,9 +1,9 @@
-// src/pages/Login.jsx
+// src/pages/AdminLogin.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const Login = () => {
+const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,10 +17,29 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message || 'Credenciales incorrectas');
+      // ✅ Login fijo para admin
+      if (email === 'tania@admin.com' && password === '123456') {
+        const fakeUser = {
+          id: 1,
+          name: 'Administrador',
+          email: 'tania@admin.com',
+          role: 'admin',
+          organization: 'TS Bio Consulting'
+        };
+
+        localStorage.setItem('token', 'fake-jwt-token-123');
+        localStorage.setItem('user', JSON.stringify(fakeUser));
+        navigate('/dashboard');
+        return;
+      }
+
+      // ❌ Si no es admin, redirige a login normal
+      try {
+        await login(email, password);
+        navigate('/dashboard');
+      } catch (err) {
+        setError(err.message || 'Credenciales incorrectas');
+      }
     } finally {
       setLoading(false);
     }
@@ -55,14 +74,14 @@ const Login = () => {
             fontSize: '1.5rem',
             fontWeight: '600'
           }}>
-            Iniciar sesión como Miembro
+            Iniciar sesión como Admin
           </h2>
           <p style={{
             margin: '0.5rem 0 0',
             fontSize: '0.95rem',
             opacity: 0.9
           }}>
-            Accede a tu cuenta
+            Accede al panel de control de TS Bio Consulting
           </p>
         </div>
 
@@ -167,7 +186,7 @@ const Login = () => {
           textAlign: 'center'
         }}>
           <button
-            onClick={() => navigate('/register')}
+            onClick={() => navigate('/login')}
             style={{
               padding: '0.5rem 1rem',
               backgroundColor: '#B8A89D',
@@ -179,17 +198,12 @@ const Login = () => {
               cursor: 'pointer'
             }}
           >
-            ¿No tienes cuenta? Regístrate
+            ← Volver a login de miembros
           </button>
-        </div>
-        <div style={{ textAlign: 'center', marginTop: '50px' }}>
-          <a href="/admin-login" style={{ fontSize: '1.2rem', color: '#7D6A5E', textDecoration: 'none', fontWeight: '600' }}>
-            ➤ Iniciar sesión como Admin
-          </a>
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default AdminLogin;

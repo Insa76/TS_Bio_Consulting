@@ -25,6 +25,7 @@ import TeamManagement from './pages/TeamManagement';
 import ReportViewer from './components/AI/ReportViewer';
 import ExportData from './pages/ExportData';
 import AIAssistant from './pages/AIAssistant';
+import AdminLogin from './pages/AdminLogin';
 
 // Ruta protegida
 const PrivateRoute = ({ children }) => {
@@ -42,11 +43,11 @@ const AdminRoute = ({ children }) => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <AppContent />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
@@ -99,6 +100,7 @@ const AppContent = () => {
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
 
             {/* Rutas protegidas para admins */}
             <Route path="/dashboard" element={

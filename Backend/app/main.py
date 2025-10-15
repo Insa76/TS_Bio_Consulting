@@ -1,10 +1,14 @@
 # main.py
+import os
 from dotenv import load_dotenv
-load_dotenv()
+
+# ✅ Cargar .env desde la raíz del proyecto
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.models.chat_message import Base as ChatBase
+from app.models.chat_message import ChatMessage
 
 # Routers
 from app.routers import auth, audits, ai, contact, chat, export
@@ -31,7 +35,7 @@ app.add_middleware(
 
 # Crear todas las tablas
 Base.metadata.create_all(bind=engine)
-ChatBase.metadata.create_all(bind=engine)
+
 
 # Incluir routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
