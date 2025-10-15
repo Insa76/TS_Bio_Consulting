@@ -45,7 +45,7 @@ const TeamManagement = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify(newTeam)
       });
@@ -68,7 +68,7 @@ const TeamManagement = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify(updatedData)
       });
@@ -91,7 +91,7 @@ const TeamManagement = () => {
       const response = await fetch(`http://localhost:8000/teams/${id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
       });
 
@@ -111,7 +111,7 @@ const TeamManagement = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify({ member_email: email })
       });

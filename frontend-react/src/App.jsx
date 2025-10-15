@@ -127,6 +127,9 @@ const AppContent = () => {
             <Route path="/create-team" element={
               <AdminRoute><CreateTeam /></AdminRoute>
             }/>
+            <Route path="/teams" element={
+              <AdminRoute><TeamManagement /></AdminRoute>
+            }/>
             <Route path="/assign-members" element={
               <AdminRoute><AssignMembers /></AdminRoute>
             }/> 

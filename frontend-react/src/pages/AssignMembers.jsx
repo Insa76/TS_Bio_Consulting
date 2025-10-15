@@ -30,7 +30,7 @@ const AssignMembers = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify({ member_email: formData.memberEmail })
       });

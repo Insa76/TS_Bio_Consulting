@@ -1,99 +1,83 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
-// ✅ Crear el contexto
 const AuthContext = createContext();
 
-// ✅ Exportar el proveedor
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
-  // Cargar usuario desde localStorage
+  // Cargar usuario desde localStorage al iniciar
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
 
     if (token && userData) {
       try {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
       } catch (e) {
-        console.warn("No se pudo cargar el usuario desde localStorage");
+        console.warn('Usuario inválido en localStorage');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       }
     }
     setLoading(false);
   }, []);
 
-  // ✅ Login
+  // Login real (con backend)
   const login = async (email, password) => {
-    try {
-      const response = await fetch('http://localhost:8000/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          username: email,
-          password: password,
-        }),
-      });
+    const response = await fetch('http://localhost:8000/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        username: email,
+        password: password,
+      }),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Credenciales incorrectas');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
-
-      // ✅ Redirigir según rol
-      if (data.user.role === 'admin') {
-        navigate('/dashboard');
-      } else {
-        navigate('/client');
-      }
-    } catch (error) {
-      console.error("Error en login:", error);
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Credenciales incorrectas');
     }
+
+    const data = await response.json();
+    localStorage.setItem('token', data.access_token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user; // Devuelve el usuario para que el componente decida la navegación
   };
 
-  // ✅ Registro
+  // Registro (opcional)
   const register = async (name, email, password, organization) => {
-    try {
-      const response = await fetch('http://localhost:8000/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          name: name,
-          email: email,
-          password: password,
-          organization: organization,
-        }),
-      });
+    const response = await fetch('http://localhost:8000/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        name,
+        email,
+        password,
+        organization,
+      }),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Error al registrar');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
-    } catch (error) {
-      console.error("Error en registro:", error);
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Error al registrar');
     }
+
+    const data = await response.json();
+    localStorage.setItem('token', data.access_token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
   };
 
-  // ✅ Logout
+  // Logout
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -108,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    setUser, // 👈 Exponemos setUser para uso externo (ej: AdminLogin)
   };
 
   return (
@@ -117,7 +102,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// ✅ Exportar el contexto para usarlo en otros archivos
+// Hook personalizado
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -125,3 +110,6 @@ export const useAuth = () => {
   }
   return context;
 };
+
+// Exportamos AuthContext por si se necesita en App.jsx (ej: con useContext directo)
+export { AuthContext };

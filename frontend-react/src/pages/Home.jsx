@@ -155,7 +155,7 @@ const Home = () => {
           cursor: 'pointer'
         }}>
           <a
-          href="https://wa.me/5491112345678?text=Hola,%20quiero%20más%20información%20sobre%20auditorías%20médicas"
+          href="https://wa.me/5493624801415?text=Hola,%20quiero%20más%20información%20sobre%20auditorías%20médicas"
           target="_blank"
           rel="noopener noreferrer"
           style={{

@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, setUser } = useAuth(); // 👈 Añade setUser
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -29,6 +30,10 @@ const AdminLogin = () => {
 
         localStorage.setItem('token', 'fake-jwt-token-123');
         localStorage.setItem('user', JSON.stringify(fakeUser));
+        
+        // ✅ Actualiza el estado global inmediatamente
+        setUser(fakeUser);
+
         navigate('/dashboard');
         return;
       }

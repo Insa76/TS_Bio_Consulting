@@ -2,16 +2,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend
+} from 'recharts';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
-    avgCompliance: 0,
-    totalAudits: 0,
-    pendingTasks: 0,
-    completedTasks: 0,
-    criticalAlerts: 0,
-    recentReports: []
-  });
+  avgCompliance: 0,
+  totalAudits: 0,
+  pendingTasks: 0,
+  completedTasks: 0,
+  criticalAlerts: 0,
+  recentAudits: [], // 👈 Cambiado de recentReports a recentAudits
+});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -23,7 +33,7 @@ const Dashboard = () => {
       try {
         const response = await fetch('http://localhost:8000/dashboard/stats', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': 'Bearer fake-jwt-token-123',
           },
         });
 

@@ -129,7 +129,7 @@ const AuditPage = () => {
       // Paso 2: Obtener informe de IA
       const aiResponse = await fetch(`http://localhost:8000/ai/report/${auditData.id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         }
       });
 
@@ -183,7 +183,7 @@ const AuditPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify({
           audit_id: reportId,

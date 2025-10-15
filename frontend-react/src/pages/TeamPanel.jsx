@@ -18,17 +18,17 @@ const TeamPanel = () => {
       try {
         const teamsRes = await fetch('http://localhost:8000/teams', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': 'Bearer fake-jwt-token-123',
           },
         });
         const membersRes = await fetch('http://localhost:8000/teams/members', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': 'Bearer fake-jwt-token-123',
           },
         });
         const tasksRes = await fetch('http://localhost:8000/tasks', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': 'Bearer fake-jwt-token-123',
           },
         });
 
@@ -59,7 +59,7 @@ const TeamPanel = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify({ name, description })
       });
@@ -82,7 +82,7 @@ const TeamPanel = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify({ name, description })
       });
@@ -106,7 +106,7 @@ const TeamPanel = () => {
       const response = await fetch(`http://localhost:8000/teams/${id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
       });
 
@@ -128,7 +128,7 @@ const TeamPanel = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify({ member_email: memberEmail })
       });
@@ -141,7 +141,7 @@ const TeamPanel = () => {
       // Recargar miembros
       const membersRes = await fetch('http://localhost:8000/teams/members', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
       });
       const membersData = await membersRes.json();
@@ -159,7 +159,7 @@ const TeamPanel = () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify({ team_id: null })
       });
@@ -169,7 +169,7 @@ const TeamPanel = () => {
       // Recargar miembros
       const membersRes = await fetch('http://localhost:8000/teams/members', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
       });
       const membersData = await membersRes.json();
@@ -189,7 +189,7 @@ const TeamPanel = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
         body: JSON.stringify({ status: newStatus })
       });
@@ -212,7 +212,7 @@ const TeamPanel = () => {
       const response = await fetch(`http://localhost:8000/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
       });
 

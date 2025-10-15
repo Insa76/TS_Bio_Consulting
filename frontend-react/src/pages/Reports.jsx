@@ -33,7 +33,7 @@ const Reports = () => {
       try {
         const response = await fetch('http://localhost:8000/audits', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': 'Bearer fake-jwt-token-123',
           },
         });
 

@@ -16,7 +16,7 @@ const ExportData = () => {
     try {
       const response = await fetch('http://localhost:8000/export/data', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': 'Bearer fake-jwt-token-123',
         },
       });
 
