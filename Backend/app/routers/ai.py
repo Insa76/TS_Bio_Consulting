@@ -1,115 +1,55 @@
-# app/routers/ai.py
+# Backend/app/routers/ai.py
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from typing import Dict
-from app.database.database import get_db
-from app.crud.audit import get_audit_by_id
-from app.ai.generate_report import generate_audit_report
-from app.ai.legal_chatbot import ask_legal_question
-from app.models.user import User
 from app.auth import get_current_user
-from app.ai import kb
-from pydantic import BaseModel
-import requests
-from app.models.audit import Audit
+from app.models.user import User
 
-router = APIRouter(tags=["ai"])
-
-class SearchQuery(BaseModel):
-    query: str
+router = APIRouter(prefix="/ai", tags=["IA"])
 
 @router.post("/chat")
 def chat(question: Dict[str, str], current_user: User = Depends(get_current_user)):
-    q = question.get("question", "")
+    """
+    Simulación de chat con IA (sin Ollama)
+    """
+    q = question.get("question", "").strip()
     if not q:
         raise HTTPException(status_code=400, detail="Pregunta vacía")
-    try:
-        answer = ask_legal_question(q)
-        return {"answer": answer}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en IA: {str(e)}")
+    
+    # Respuesta simulada
+    simulated_answer = (
+        "⚠️ **IA local desactivada en esta versión de prueba.**\n\n"
+        "En la versión completa instalada en su clínica, este asistente responde con base en:\n"
+        "- Ley 26.529 de Derechos del Paciente\n"
+        "- Normas de la ANMAT\n"
+        "- Códigos de Ética Médica\n"
+        "- Jurisprudencia argentina reciente\n\n"
+        "Ejemplo de respuesta real: _'El consentimiento informado debe ser claro, escrito y firmado por el paciente o su representante legal, según el Art. 6 de la Ley 26.529.'_"
+    )
+    return {"answer": simulated_answer}
 
 @router.get("/report/{audit_id}")
-def generate_ai_report(
-    audit_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    # 1. Buscar la auditoría
-    audit = db.query(Audit).filter(Audit.id == audit_id, Audit.user_id == current_user.id).first()
-    if not audit:
-        raise HTTPException(status_code=404, detail="Auditoría no encontrada o no autorizada")
+def generate_report(audit_id: int, current_user: User = Depends(get_current_user)):
+    """
+    Simulación de generación de informe (sin Ollama)
+    """
+    simulated_report = """
+    <h2>📄 Informe de Cumplimiento Sanitario (Simulado)</h2>
+    <p><strong>Nota:</strong> Este es un informe de ejemplo. En la versión con IA local, se genera un análisis detallado basado en sus respuestas y la normativa vigente.</p>
+    
+    <h3>🔍 Hallazgos clave</h3>
+    <ul>
+        <li>✅ Consentimientos informados alineados con Ley 26.529</li>
+        <li>⚠️ Comité de Bioética no formalizado</li>
+        <li>❌ Protocolos de emergencia desactualizados</li>
+    </ul>
 
-    # 2. Preparar respuestas
-    answers = "\n".join([f"{q}: {a}" for q, a in audit.answers.items()])
+    <h3>📋 Recomendaciones</h3>
+    <ol>
+        <li>Constituir Comité de Bioética según Resolución 1480/2011</li>
+        <li>Actualizar protocolos de emergencia cada 6 meses</li>
+        <li>Capacitar al personal en normativa ANMAT</li>
+    </ol>
 
-    # 3. Prompt claro y estructurado
-    prompt = f"""
-Eres un consultor médico especializado en auditorías sanitarias argentinas.
-Basado en las siguientes respuestas de una autoevaluación, genera un informe profesional en HTML (sin <html> ni <body>).
-
-INFORME:
-Incluye:
-- Un título claro
-- Hallazgos principales (positivos y críticos)
-- Nivel general de cumplimiento: X%
-- Brechas críticas (máximo 5): con nombre de norma y riesgo (Alta/Media/Baja)
-- Recomendaciones: Acciones específicas con plantillas descargables
-- Nota final: “Este informe fue generado por TS Bio Consulting AI. No sustituye asesoría legal.”
-
-Preguntas y respuestas:
-{answers}
-
-Normativas clave:
-- Ley 26.529: Derechos del Paciente
-- Ley 25.916: Gestión de Residuos
-- ANMAT: Regulación de productos sanitarios
-- NOM-004: Higiene y seguridad
-- Ley 27.575: Telemedicina
-
-Formato del informe:
-Título: Informe de Cumplimiento Sanitario – [Nombre de la Clínica]
-Resumen ejecutivo: 1 párrafo breve.
-Nivel general de cumplimiento: X%
-Brechas críticas (máximo 5): con nombre de norma y riesgo (Alta/Media/Baja)
-Recomendaciones: Acciones específicas con plantillas descargables
-Nota final: “Este informe fue generado por TS Bio Consulting AI. No sustituye asesoría legal.”
-
-No uses viñetas en el resumen. Usa párrafos completos.
-"""
-
-    try:
-        # 4. Llamar a Ollama (IA local)
-        response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": "llama3",
-                "prompt": prompt,
-                "stream": False
-            },
-            timeout=60
-        )
-
-        if not response.ok: raise HTTPException(status_code=500, detail="Error al comunicarse con Ollama")
-
-        data = response.json()
-        report_text = data["response"]
-
-        # 5. Guardar el informe en la auditoría
-        audit.report = report_text
-        db.commit()
-
-        return {"report": report_text}
-
-    except requests.exceptions.ConnectionError:
-        raise HTTPException(status_code=500, detail="No se pudo conectar con Ollama. Asegúrate de que esté corriendo.")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al generar el informe: {str(e)}")
-
-@router.post("/search")
-def semantic_search(query_data: SearchQuery):
-    try:
-        results = kb.search(query_data.query, k=2)
-        return {"results": results}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en búsqueda: {str(e)}")
+    <p><em>Este informe fue generado automáticamente por TS Bio Consulting — Asesoría Médica con IA Local.</em></p>
+    """
+    return {"report": simulated_report}

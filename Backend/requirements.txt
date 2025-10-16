@@ -8,15 +8,10 @@ psycopg2-binary==2.9.10
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 bcrypt>=4.0.0
-langchain==0.3.1
-langchain-community==0.3.1
-langchain-ollama==0.2.0
-faiss-cpu==1.12.0
 pdfplumber==0.11.2
 python-multipart==0.0.9
 python-decouple==3.8
-firebase-admin==6.5.0
-sentence-transformers==3.0.1  # ✅ Versión moderna compatible con huggingface_hub>=0.20.0
+firebase-admin==6.5.0  # ✅ Versión moderna compatible con huggingface_hub>=0.20.0
 huggingface-hub==0.20.3       # ✅ Versión compatible
 torch==2.7.1
 torchvision==0.22.1
