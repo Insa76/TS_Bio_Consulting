@@ -13,6 +13,8 @@ import {
   Legend
 } from 'recharts';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
   avgCompliance: 0,
@@ -26,8 +28,6 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   // Cargar estadísticas
   useEffect(() => {
