@@ -1,6 +1,8 @@
 // src/components/ChatBotFloating.jsx
 import React, { useState } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const ChatBotFloating = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -36,7 +38,7 @@ const ChatBotFloating = () => {
 
   try {
     // Enviar mensaje y recibir respuesta + guardado en DB
-    const response = await fetch('http://localhost:8000/chat/message', {
+    const response = await fetch(`${API_URL}/chat/message`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: input, session_id: sessionId })
@@ -55,7 +57,7 @@ const ChatBotFloating = () => {
         data.response.toLowerCase().includes("contactar")) {
       
       setTimeout(() => {
-        const whatsappUrl = `https://wa.me/5491112345678?text=Hola,%20soy%20del%20chatbot:%20${encodeURIComponent(input)}`;
+        const whatsappUrl = `https://wa.me/5493624801415?text=Hola,%20soy%20del%20chatbot:%20${encodeURIComponent(input)}`;
         const buttonMsg = {
           text: (
             <a

@@ -14,7 +14,7 @@ const TaskNotifications = () => {
       try {
         const response = await fetch(`${API_URL}/tasks/notifications`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': 'Bearer fake-jwt-token-123',
           },
         });
 
