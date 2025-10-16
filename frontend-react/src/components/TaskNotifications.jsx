@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const TaskNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +12,7 @@ const TaskNotifications = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch('http://localhost:8000/tasks/notifications', {
+        const response = await fetch(`${API_URL}/tasks/notifications`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },

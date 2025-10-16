@@ -1,6 +1,8 @@
 // src/components/AI/ChatBot.jsx
 import React, { useState } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const ChatBot = () => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -15,7 +17,7 @@ const ChatBot = () => {
   try {
     const token = localStorage.getItem('token'); // ✅ Obtiene el token
 
-    const response = await fetch('http://localhost:8000/ai/chat', {
+    const response = await fetch(`${API_URL}/ai/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

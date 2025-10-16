@@ -1,8 +1,7 @@
 // src/services/api.js
 import axios from 'axios';
 
-// ✅ Usa la URL base correcta (sin /api si no lo usas)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'; // ← Sin /api al final
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -21,9 +20,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Manejo de respuestas
@@ -31,7 +28,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token inválido o expirado → logout
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -53,8 +49,8 @@ export const auditService = {
 };
 
 export const aiService = {
-  // ✅ Este endpoint debe estar definido en FastAPI
-  chat: (question) => api.post('/ai/search', { query: question }), // Usa búsqueda semántica
+  // ✅ Corregido: usa /ai/chat y { question }
+  chat: (question) => api.post('/ai/chat', { question }),
   generateReport: (auditId) => api.get(`/ai/report/${auditId}`),
 };
 

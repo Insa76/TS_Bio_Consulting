@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const ReportViewer = () => {
   const { id } = useParams();
   const [report, setReport] = useState('');
@@ -12,7 +14,7 @@ const ReportViewer = () => {
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/ai/report/${id}`, {
+        const response = await fetch(`${API_URL}/ai/report/${id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
