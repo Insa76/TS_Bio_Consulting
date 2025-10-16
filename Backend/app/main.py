@@ -29,12 +29,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "http://192.168.1.12:5173",
-        "https://ts-bio-consulting.vercel.app"  # ← Sin espacios al final
+        "https://ts-bio-consulting.vercel.app"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # explícito
+    allow_headers=["*"],  # acepta cualquier header (incluyendo Authorization)
 )
 
 # Crear todas las tablas
