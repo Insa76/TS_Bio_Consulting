@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const CreateTeam = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -26,7 +28,7 @@ const CreateTeam = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/teams', {
+      const response = await fetch(`${API_URL}/teams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

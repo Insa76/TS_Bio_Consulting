@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 // Importar recharts
 import {
   LineChart,
@@ -31,7 +33,7 @@ const Reports = () => {
   useEffect(() => {
     const fetchAudits = async () => {
       try {
-        const response = await fetch('http://localhost:8000/audits', {
+        const response = await fetch(`${API_URL}/audits`, {
           headers: {
             'Authorization': 'Bearer fake-jwt-token-123',
           },

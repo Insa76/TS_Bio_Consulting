@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const ExportData = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,7 +16,7 @@ const ExportData = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/export/data', {
+      const response = await fetch(`${API_URL}/export/data`, {
         headers: {
           'Authorization': 'Bearer fake-jwt-token-123',
         },

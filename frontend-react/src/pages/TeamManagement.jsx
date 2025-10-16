@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const TeamManagement = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ const TeamManagement = () => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await fetch('http://localhost:8000/teams', {
+        const response = await fetch(`${API_URL}/teams`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -41,7 +43,7 @@ const TeamManagement = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/teams', {
+      const response = await fetch(`${API_URL}/teams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +66,7 @@ const TeamManagement = () => {
   // Editar equipo
   const handleUpdateTeam = async (id, updatedData) => {
     try {
-      const response = await fetch(`http://localhost:8000/teams/${id}`, {
+      const response = await fetch(`${API_URL}/teams/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +90,7 @@ const TeamManagement = () => {
     if (!window.confirm("¿Estás seguro de eliminar este equipo?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/teams/${id}`, {
+      const response = await fetch(`${API_URL}/teams/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer fake-jwt-token-123',
@@ -107,7 +109,7 @@ const TeamManagement = () => {
   // Asignar miembro a equipo
   const handleAssignMember = async (teamId, email) => {
     try {
-      const response = await fetch(`http://localhost:8000/teams/${teamId}/members`, {
+      const response = await fetch(`${API_URL}/teams/${teamId}/members`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

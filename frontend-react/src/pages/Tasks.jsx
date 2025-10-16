@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ const Tasks = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch('http://localhost:8000/tasks', {
+        const response = await fetch(`${API_URL}/tasks`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -54,7 +56,7 @@ const Tasks = () => {
   // Actualizar estado de tarea
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:8000/tasks/${taskId}`, {
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +80,7 @@ const Tasks = () => {
     if (!window.confirm("¿Estás seguro de eliminar esta tarea?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/tasks/${taskId}`, {
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -97,7 +99,7 @@ const Tasks = () => {
 
   const sendEmailNotifications = async () => {
   try {
-    const response = await fetch('http://localhost:8000/tasks/send-notifications', {
+    const response = await fetch(`${API_URL}/tasks/send-notifications`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,

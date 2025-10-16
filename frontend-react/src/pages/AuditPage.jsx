@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const AuditPage = () => {
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
@@ -110,7 +112,7 @@ const AuditPage = () => {
 
     try {
       // Paso 1: Guardar auditoría
-      const response = await fetch('http://localhost:8000/audits', {
+      const response = await fetch(`${API_URL}/audits`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +129,7 @@ const AuditPage = () => {
       const auditData = await response.json();
 
       // Paso 2: Obtener informe de IA
-      const aiResponse = await fetch(`http://localhost:8000/ai/report/${auditData.id}`, {
+      const aiResponse = await fetch(`${API_URL}/ai/report/${auditData.id}`, {
         headers: {
           'Authorization': 'Bearer fake-jwt-token-123',
         }
@@ -179,7 +181,7 @@ const AuditPage = () => {
   // Asignar tarea
   const assignTask = async (action, responsible, deadline) => {
     try {
-      const response = await fetch('http://localhost:8000/tasks', {
+      const response = await fetch(`${API_URL}/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

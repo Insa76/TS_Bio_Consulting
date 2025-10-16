@@ -27,11 +27,13 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   // Cargar estadísticas
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('http://localhost:8000/dashboard/stats', {
+        const response = await fetch(`${API_URL}/dashboard/stats`, {
           headers: {
             'Authorization': 'Bearer fake-jwt-token-123',
           },

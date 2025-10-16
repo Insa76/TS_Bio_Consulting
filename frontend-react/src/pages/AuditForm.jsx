@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const AuditForm = () => {
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,7 @@ const AuditForm = () => {
     setReport('');
 
     try {
-      const response = await fetch('http://localhost:8000/audits', {
+      const response = await fetch(`${API_URL}/audits`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -62,7 +64,7 @@ const AuditForm = () => {
       const data = await response.json();
       setAuditId(data.id);
 
-      const reportResponse = await fetch(`http://localhost:8000/ai/report/${data.id}`);
+      const reportResponse = await fetch(`${API_URL}/ai/report/${data.id}`);
       if (!reportResponse.ok) throw new Error('Error al generar el informe');
 
       const reportData = await reportResponse.json();

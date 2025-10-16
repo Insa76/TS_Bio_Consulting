@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const TeamPanel = () => {
   const [teams, setTeams] = useState([]);
   const [members, setMembers] = useState([]);
@@ -16,17 +18,17 @@ const TeamPanel = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const teamsRes = await fetch('http://localhost:8000/teams', {
+        const teamsRes = await fetch(`${API_URL}/teams`, {
           headers: {
             'Authorization': 'Bearer fake-jwt-token-123',
           },
         });
-        const membersRes = await fetch('http://localhost:8000/teams/members', {
+        const membersRes = await fetch(`${API_URL}/teams/members`, {
           headers: {
             'Authorization': 'Bearer fake-jwt-token-123',
           },
         });
-        const tasksRes = await fetch('http://localhost:8000/tasks', {
+        const tasksRes = await fetch(`${API_URL}/tasks`, {
           headers: {
             'Authorization': 'Bearer fake-jwt-token-123',
           },
@@ -55,7 +57,7 @@ const TeamPanel = () => {
   // Funciones CRUD para equipos
   const createTeam = async (name, description) => {
     try {
-      const response = await fetch('http://localhost:8000/teams', {
+      const response = await fetch(`${API_URL}/teams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +80,7 @@ const TeamPanel = () => {
 
   const updateTeam = async (id, name, description) => {
     try {
-      const response = await fetch(`http://localhost:8000/teams/${id}`, {
+      const response = await fetch(`${API_URL}/teams/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +105,7 @@ const TeamPanel = () => {
     if (!window.confirm("¿Estás seguro de eliminar este equipo?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/teams/${id}`, {
+      const response = await fetch(`${API_URL}/teams/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer fake-jwt-token-123',
@@ -124,7 +126,7 @@ const TeamPanel = () => {
   // Funciones CRUD para miembros
   const assignMemberToTeam = async (teamId, memberEmail) => {
     try {
-      const response = await fetch(`http://localhost:8000/teams/${teamId}/members`, {
+      const response = await fetch(`${API_URL}/teams/${teamId}/members`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +141,7 @@ const TeamPanel = () => {
       alert(result.message);
 
       // Recargar miembros
-      const membersRes = await fetch('http://localhost:8000/teams/members', {
+      const membersRes = await fetch(`${API_URL}/teams/members`, {
         headers: {
           'Authorization': 'Bearer fake-jwt-token-123',
         },
@@ -155,7 +157,7 @@ const TeamPanel = () => {
 
   const removeMemberFromTeam = async (memberId) => {
     try {
-      const response = await fetch(`http://localhost:8000/users/${memberId}`, {
+      const response = await fetch(`${API_URL}/users/${memberId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +169,7 @@ const TeamPanel = () => {
       if (!response.ok) throw new Error('Error al quitar miembro del equipo');
 
       // Recargar miembros
-      const membersRes = await fetch('http://localhost:8000/teams/members', {
+      const membersRes = await fetch(`${API_URL}/teams/members`, {
         headers: {
           'Authorization': 'Bearer fake-jwt-token-123',
         },
@@ -185,7 +187,7 @@ const TeamPanel = () => {
   // Funciones CRUD para tareas
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:8000/tasks/${taskId}`, {
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -209,7 +211,7 @@ const TeamPanel = () => {
     if (!window.confirm("¿Estás seguro de eliminar esta tarea?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/tasks/${taskId}`, {
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': 'Bearer fake-jwt-token-123',

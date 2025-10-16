@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const AIAssistant = () => {
   const [messages, setMessages] = useState([
     { text: "¡Hola! Soy tu asistente legal con IA local. ¿En qué puedo ayudarte?", sender: "bot" }
@@ -24,7 +26,7 @@ const AIAssistant = () => {
     setError("");
 
     try {
-      const response = await fetch('http://localhost:8000/ai/chat', {
+      const response = await fetch(`${API_URL}/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
