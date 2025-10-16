@@ -1,44 +1,38 @@
-# main.py
+# Backend/app/main.py
 import os
 from dotenv import load_dotenv
 
-# ✅ Cargar .env desde la raíz del proyecto
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.models.chat_message import ChatMessage
 
-# Routers
+# ✅ Crea la app PRIMERO
+app = FastAPI(title="TS Bio Consulting API", version="1.0.0")
+
+# ✅ Configura CORS INMEDIATAMENTE después
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "https://ts-bio-consulting.vercel.app"  # ← Sin espacios al final
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ✅ Luego importa y configura el resto
+from app.database.database import engine
+from app.database.base import Base
 from app.routers import auth, audits, ai, contact, chat, export
 from app.routers.tasks import router as tasks_router
 from app.routers.dashboard import router as dashboard_router
 from app.routers.teams import router as teams_router
 
-
-# Database
-from app.database.database import engine
-from app.database.base import Base
-
-
-app = FastAPI(title="TS Bio Consulting API", version="1.0.0")
-
-# CORS - Cambia ["*"] por dominios específicos en producción
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://ts-bio-consulting.vercel.app"
-    ],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # explícito
-    allow_headers=["*"],  # acepta cualquier header (incluyendo Authorization)
-)
-
-# Crear todas las tablas
+# Crear tablas
 Base.metadata.create_all(bind=engine)
-
 
 # Incluir routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
