@@ -19,17 +19,15 @@ class SearchQuery(BaseModel):
     query: str
 
 @router.post("/chat")
-async def chat(
-    question: Dict[str, str],
-    current_user: User = Depends(get_current_user)
-):
-    """Responde preguntas legales usando IA + base de conocimiento"""
+def chat(question: Dict[str, str], current_user: User = Depends(get_current_user)):
     q = question.get("question", "")
     if not q:
         raise HTTPException(status_code=400, detail="Pregunta vacía")
-    
-    answer = ask_legal_question(q)
-    return {"answer": answer}
+    try:
+        answer = ask_legal_question(q)
+        return {"answer": answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en IA: {str(e)}")
 
 @router.get("/report/{audit_id}")
 def generate_ai_report(

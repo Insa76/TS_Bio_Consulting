@@ -1,3 +1,4 @@
+# Backend/app/ai/legal_chatbot.py
 import os
 from pathlib import Path
 from langchain_community.vectorstores import FAISS
@@ -6,59 +7,47 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
-# --- CONFIGURACIÓN ABSOLUTA CORREGIDA ---
-# El directorio actual es donde se ejecutó `uvicorn` (backend/)
-# Queremos subir UN nivel hasta la raíz del proyecto
-BASE_DIR = Path(os.getcwd()).parent
+# 📌 Ruta ABSOLUTA al índice FAISS (evita errores de contexto)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # Raíz del proyecto (Backend/)
 EMBEDDINGS_PATH = BASE_DIR / "ai-knowledge-base" / "embeddings" / "faiss_index"
-
-print(f"🔍 Directorio de trabajo actual: {os.getcwd()}")
-print(f"📁 Ruta base del proyecto: {BASE_DIR}")
-print(f"📁 Buscando embeddings en: {EMBEDDINGS_PATH}")
 
 def load_rag_system():
     if not EMBEDDINGS_PATH.exists():
-        raise FileNotFoundError(f"❌ La carpeta de embeddings no existe: {EMBEDDINGS_PATH}")
-
-    if not (EMBEDDINGS_PATH / "index.faiss").exists():
-        raise FileNotFoundError(f"❌ El archivo index.faiss no existe en: {EMBEDDINGS_PATH}")
-
-    print("✅ Archivos de embeddings encontrados. Cargando...")
-
+        raise FileNotFoundError(f"❌ Carpeta de embeddings no encontrada: {EMBEDDINGS_PATH}")
+    
     embeddings = OllamaEmbeddings(model="nomic-embed-text")
-    vectorstore = FAISS.load_local(
-        EMBEDDINGS_PATH,
-        embeddings,
-        allow_dangerous_deserialization=True
-    )
-
-    llm = ChatOllama(
-        model="llama3",
-        temperature=0.1,
-        max_tokens=500,
-    )
-
-    prompt = ChatPromptTemplate.from_template("""
-    Responde como un abogado especialista en salud en Argentina. Usa SOLO información de las normativas argentinas.
-    Si no estás seguro, di: "Consulte con un jurista o profesional certificado."
-
+    vectorstore = FAISS.load_local(str(EMBEDDINGS_PATH), embeddings, allow_dangerous_deserialization=True)
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+    
+    template = """
+    Eres un asistente legal especializado en normativa médica argentina.
+    Responde SOLO con base en el contexto proporcionado.
+    Si no sabes la respuesta, di: "No tengo información suficiente sobre eso."
+    
     Contexto: {context}
-
     Pregunta: {question}
-
-    Respuesta (en español argentino, claro y conciso):
-    """)
-
+    Respuesta (en español argentino, clara y profesional):
+    """
+    prompt = ChatPromptTemplate.from_template(template)
+    llm = ChatOllama(model="llama3", temperature=0.1)
+    
     chain = (
-        {"context": vectorstore.as_retriever(search_kwargs={"k": 3}), "question": RunnablePassthrough()}
+        {"context": retriever, "question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
     )
-
     return chain
 
-chatbot = load_rag_system()
+# ✅ Carga el chatbot SOLO si se va a usar (evita fallos al importar)
+chatbot = None
+
+def get_chatbot():
+    global chatbot
+    if chatbot is None:
+        chatbot = load_rag_system()
+    return chatbot
 
 def ask_legal_question(question: str) -> str:
-    return chatbot.invoke(question)
+    bot = get_chatbot()
+    return bot.invoke(question)
