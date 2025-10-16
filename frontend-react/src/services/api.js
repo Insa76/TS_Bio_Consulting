@@ -2,10 +2,10 @@
 import axios from 'axios';
 
 // ✅ Usa la URL base correcta (sin /api si no lo usas)
-const API_BASE_URL = 'http://localhost:8000'; // ← Sin /api al final
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'; // ← Sin /api al final
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

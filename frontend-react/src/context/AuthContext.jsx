@@ -3,6 +3,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export const AuthProvider = ({ children }) => {
 
   // Login real (con backend)
   const login = async (email, password) => {
-    const response = await fetch('http://localhost:8000/auth/login', {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -52,7 +54,7 @@ export const AuthProvider = ({ children }) => {
 
   // Registro (opcional)
   const register = async (name, email, password, organization) => {
-    const response = await fetch('http://localhost:8000/auth/register', {
+    const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
