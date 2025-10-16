@@ -27,7 +27,11 @@ app = FastAPI(title="TS Bio Consulting API", version="1.0.0")
 # CORS - Cambia ["*"] por dominios específicos en producción
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://192.168.1.12:5173", "https://ts-bio-consulting.vercel.app"],  # Solo frontend permitido
+    allow_origins=[
+        "http://localhost:5173",
+        "http://192.168.1.12:5173",
+        "https://ts-bio-consulting.vercel.app"  # ← Sin espacios al final
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
